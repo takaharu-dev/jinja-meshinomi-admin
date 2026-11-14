@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 it('トップページは管理画面へリダイレクトする', function () {
     $this->get('/')->assertRedirect('/admin');
 });
