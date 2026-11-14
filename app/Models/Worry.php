@@ -21,10 +21,10 @@ class Worry extends Model
     use HasFactory, HasSortOrder;
 
     /**
-     * @return HasMany<WorryDay, $this>
+     * @return HasMany<WorryScene, $this>
      */
-    public function days(): HasMany
+    public function scenes(): HasMany
     {
-        return $this->hasMany(WorryDay::class)->ordered();
+        return $this->hasMany(WorryScene::class)->ordered();
     }
 }

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\Worry;
-use App\Models\WorryDay;
+use App\Models\WorryScene;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<WorryDay>
+ * @extends Factory<WorryScene>
  */
-class WorryDayFactory extends Factory
+class WorrySceneFactory extends Factory
 {
     public function definition(): array
     {

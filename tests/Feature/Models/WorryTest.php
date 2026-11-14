@@ -3,23 +3,23 @@
 declare(strict_types=1);
 
 use App\Models\Worry;
-use App\Models\WorryDay;
+use App\Models\WorryScene;
 use Illuminate\Database\UniqueConstraintViolationException;
 
 it('こんな日に行きたい を sort_order 順に取得できる', function () {
     $worry = Worry::factory()->create();
-    WorryDay::factory()->for($worry)->create(['text' => '2番目', 'sort_order' => 2]);
-    WorryDay::factory()->for($worry)->create(['text' => '1番目', 'sort_order' => 1]);
+    WorryScene::factory()->for($worry)->create(['text' => '2番目', 'sort_order' => 2]);
+    WorryScene::factory()->for($worry)->create(['text' => '1番目', 'sort_order' => 1]);
 
-    expect($worry->days->pluck('text')->all())->toBe(['1番目', '2番目']);
+    expect($worry->scenes->pluck('text')->all())->toBe(['1番目', '2番目']);
 });
 
 it('悩みを消すと こんな日に行きたい も消える', function () {
-    $day = WorryDay::factory()->create();
+    $scene = WorryScene::factory()->create();
 
-    $day->worry->delete();
+    $scene->worry->delete();
 
-    expect(WorryDay::find($day->id))->toBeNull();
+    expect(WorryScene::find($scene->id))->toBeNull();
 });
 
 it('slug は重複できない', function () {
