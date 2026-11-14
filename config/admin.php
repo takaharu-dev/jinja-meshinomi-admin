@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | IP 制限
+    |--------------------------------------------------------------------------
+    |
+    | 許可した IP 以外からのアクセスには 403 を返す。ログインと二重にして、
+    | ログイン画面そのものを外から見えないようにする。
+    | 設定が無いときは有効・許可 IP なし（＝全部拒否）に倒す。
+    |
+    */
+
+    'ip_restriction' => [
+        'enabled' => (bool) env('ADMIN_IP_RESTRICTION_ENABLED', true),
+
+        // カンマ区切り。IPv4 / IPv6 と CIDR 表記（例：192.0.2.0/24）に対応
+        'allowed_ips' => array_values(array_filter(
+            array_map(trim(...), explode(',', (string) env('ADMIN_ALLOWED_IPS', ''))),
+            fn (string $ip): bool => $ip !== '',
+        )),
+    ],
+
+];
