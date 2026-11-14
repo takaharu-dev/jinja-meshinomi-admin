@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPhotos;
 use App\Models\Pivots\ShrineShop;
 use Database\Factories\ShopFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * 参拝後に寄るお店。神社・参拝記録から使い回す。
@@ -20,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Shop extends Model
 {
     /** @use HasFactory<ShopFactory> */
-    use HasFactory;
+    use HasFactory, HasPhotos;
 
     protected function casts(): array
     {
@@ -39,5 +41,13 @@ class Shop extends Model
             ->using(ShrineShop::class)
             ->withPivot('distance', 'recommend', 'sort_order')
             ->withTimestamps();
+    }
+
+    /**
+     * @return HasMany<VisitLog, $this>
+     */
+    public function visitLogs(): HasMany
+    {
+        return $this->hasMany(VisitLog::class);
     }
 }

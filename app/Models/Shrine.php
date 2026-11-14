@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPhotos;
 use App\Models\Pivots\ShrineShop;
 use App\Models\Pivots\ShrineStation;
 use App\Models\Pivots\ShrineWorry;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
 
@@ -28,7 +30,7 @@ use Illuminate\Support\Facades\DB;
 class Shrine extends Model
 {
     /** @use HasFactory<ShrineFactory> */
-    use HasFactory;
+    use HasFactory, HasPhotos;
 
     /** 「駅から徒歩5分以内」とみなす、最寄り駅からの徒歩分数 */
     public const int NEAR_STATION_WALK_MINUTES = 5;
@@ -158,5 +160,13 @@ class Shrine extends Model
         });
 
         $this->unsetRelation('stations');
+    }
+
+    /**
+     * @return HasMany<VisitLog, $this>
+     */
+    public function visitLogs(): HasMany
+    {
+        return $this->hasMany(VisitLog::class);
     }
 }
