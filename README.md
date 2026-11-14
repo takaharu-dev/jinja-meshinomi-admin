@@ -208,6 +208,7 @@ cp .env.example .env
 ./vendor/bin/sail up -d                 # 初回はイメージのビルドに 10〜20 分
 ./vendor/bin/sail artisan key:generate
 ./vendor/bin/sail artisan migrate
+./vendor/bin/sail artisan storage:link  # アップロードした写真を公開する
 ./vendor/bin/sail artisan admin:create  # 管理者ユーザーを作る
 ```
 
@@ -226,6 +227,7 @@ http://localhost:8000/admin を開き、作った管理者でログインしま�
 |---|---|
 | `ADMIN_IP_RESTRICTION_ENABLED` | IP 制限の有効・無効。ローカルは `false`。未設定なら有効 |
 | `ADMIN_ALLOWED_IPS` | 許可する IP をカンマ区切りで指定。CIDR（`198.51.100.0/24`）と IPv6 も可。空なら全部拒否 |
+| `ADMIN_PHOTO_DISK` | 写真のアップロード先のディスク。今は `public`、本番で `s3` に切り替える想定 |
 | `ADMIN_PASSWORD` | `admin:create` で使うパスワード（12文字以上）。空なら実行時に入力を求める |
 | `APP_PORT` / `FORWARD_DB_PORT` | Sail がホスト側に公開するポート |
 
