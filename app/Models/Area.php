@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * エリア（港区、武蔵野市 など）。
@@ -26,5 +27,21 @@ class Area extends Model
     public function group(): BelongsTo
     {
         return $this->belongsTo(AreaGroup::class, 'area_group_id');
+    }
+
+    /**
+     * @return HasMany<Station, $this>
+     */
+    public function stations(): HasMany
+    {
+        return $this->hasMany(Station::class);
+    }
+
+    /**
+     * @return HasMany<Shrine, $this>
+     */
+    public function shrines(): HasMany
+    {
+        return $this->hasMany(Shrine::class);
     }
 }
