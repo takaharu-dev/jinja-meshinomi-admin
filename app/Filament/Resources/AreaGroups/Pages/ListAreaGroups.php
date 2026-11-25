@@ -7,6 +7,7 @@ namespace App\Filament\Resources\AreaGroups\Pages;
 use App\Filament\Resources\AreaGroups\AreaGroupResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Enums\Size;
 
 class ListAreaGroups extends ListRecords
 {
@@ -15,7 +16,8 @@ class ListAreaGroups extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            // 一覧でいちばん大事な操作なので、大きく出す
+            CreateAction::make()->size(Size::Large),
         ];
     }
 }

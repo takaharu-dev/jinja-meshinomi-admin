@@ -10,6 +10,7 @@ use App\Filament\Resources\Shops\Pages\EditShop;
 use App\Filament\Resources\Shops\Pages\ListShops;
 use App\Filament\Resources\Shops\Schemas\ShopForm;
 use App\Filament\Resources\Shops\Tables\ShopsTable;
+use App\Filament\Support\NavigationGroups;
 use App\Models\Shop;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -24,13 +25,25 @@ class ShopResource extends Resource
 
     protected static ?string $modelLabel = 'お店';
 
+    /** メニュー・一覧の見出し・パンくずに出る。「一覧」と付けて、開くと一覧が見えることを伝える */
+    protected static ?string $pluralModelLabel = 'お店の一覧';
+
+    /** 「一覧を見る」グループの中なので、メニューには名前だけを出す */
+    protected static ?string $navigationLabel = 'お店';
+
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static string|UnitEnum|null $navigationGroup = 'コンテンツ';
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroups::LISTS;
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingStorefront;
+
+    /** メニューに件数を出す */
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) static::getModel()::query()->count();
+    }
 
     public static function form(Schema $schema): Schema
     {

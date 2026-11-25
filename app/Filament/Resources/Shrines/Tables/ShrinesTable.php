@@ -23,6 +23,7 @@ class ShrinesTable
         return $table
             // メインの悩み・写真の枚数を一覧で出すので、まとめて読み込む（N+1 を防ぐ）
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['area', 'worries'])->withCount('photos'))
+            ->description('「編集する」を開くと、画面の下のタブで悩み・最寄り駅・参拝後のお店・写真を追加できます。')
             ->columns([
                 TextColumn::make('name')
                     ->label('名前')

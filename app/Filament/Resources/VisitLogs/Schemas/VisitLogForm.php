@@ -20,6 +20,9 @@ class VisitLogForm
         return $schema
             ->components([
                 Section::make('参拝記録')
+                    ->description(fn (string $operation): ?string => $operation === 'create'
+                        ? '写真は、保存したあとの編集画面で、画面の下の「写真」タブから追加します。'
+                        : null)
                     ->columns(2)
                     ->schema([
                         TextInput::make('title')

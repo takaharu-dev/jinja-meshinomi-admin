@@ -9,6 +9,7 @@ use App\Filament\Resources\Stations\Pages\EditStation;
 use App\Filament\Resources\Stations\Pages\ListStations;
 use App\Filament\Resources\Stations\Schemas\StationForm;
 use App\Filament\Resources\Stations\Tables\StationsTable;
+use App\Filament\Support\NavigationGroups;
 use App\Models\Station;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -23,9 +24,15 @@ class StationResource extends Resource
 
     protected static ?string $modelLabel = '駅';
 
+    /** メニュー・一覧の見出し・パンくずに出る。「一覧」と付けて、開くと一覧が見えることを伝える */
+    protected static ?string $pluralModelLabel = '駅の一覧';
+
+    /** 「一覧を見る」グループの中なので、メニューには名前だけを出す */
+    protected static ?string $navigationLabel = '駅';
+
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static string|UnitEnum|null $navigationGroup = 'マスタ';
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroups::SETTINGS;
 
     protected static ?int $navigationSort = 4;
 

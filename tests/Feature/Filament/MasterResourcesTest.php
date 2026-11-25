@@ -179,8 +179,8 @@ describe('駅', function () {
     });
 });
 
-it('管理画面のメニューにマスタが日本語で並ぶ', function () {
+it('管理画面のメニューにマスタが「設定」として日本語で並ぶ', function () {
     $this->get('/admin')
         ->assertOk()
-        ->assertSeeInOrder(['マスタ', '悩み', 'エリアグループ', 'エリア', '駅']);
+        ->assertSeeInOrder(['設定（ふだんは触らない）', '悩み', 'エリアグループ', 'エリア', '駅']);
 });
