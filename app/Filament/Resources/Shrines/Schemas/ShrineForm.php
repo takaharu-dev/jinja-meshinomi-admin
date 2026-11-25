@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Shrines\Schemas;
 
 use App\Filament\Forms\SlugInput;
+use App\Models\Area;
+use App\Models\Shrine;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -33,14 +36,22 @@ class ShrineForm
                             ->placeholder('あたごじんじゃ')
                             ->required()
                             ->maxLength(255),
-                        SlugInput::make()
-                            ->placeholder('atago'),
+                        SlugInput::make(scope: 'area_id')
+                            ->placeholder('atago-jinja')
+                            ->helperText('正式名のローマ字をハイフンでつなぐ（例：atago-jinja、tsurugaoka-hachimangu）。URL の3段目になる。同じエリアの中で重ならなければよい'),
                         Select::make('area_id')
-                            ->label('エリア')
-                            ->relationship('area', 'label', fn ($query) => $query->ordered())
+                            ->label('エリア（市区町村）')
+                            ->relationship('area', 'label', fn ($query) => $query->with('prefecture')->ordered())
+                            ->getOptionLabelFromRecordUsing(fn (Area $record): string => $record->prefecture->label.' '.$record->label)
                             ->required()
                             ->preload()
-                            ->searchable(),
+                            ->searchable()
+                            ->live(),
+                        TextEntry::make('public_path')
+                            ->label('公開したときの URL')
+                            ->state(fn (?Shrine $record): string => $record?->publicPath() ?? '保存すると決まります')
+                            ->visibleOn('edit')
+                            ->columnSpanFull(),
                         TextInput::make('address')
                             ->label('住所')
                             ->placeholder('東京都港区愛宕1-5-3')

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Filament\Forms;
 
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Utilities\Get;
+use Illuminate\Validation\Rules\Unique;
 
 /**
  * URL に使う slug の入力欄。本体の URL（/shrines/atago など）にそのまま使うので、
@@ -14,7 +16,10 @@ final class SlugInput
 {
     public const string PATTERN = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
 
-    public static function make(string $name = 'slug'): TextInput
+    /**
+     * @param  string|null  $scope  重複を調べる範囲のカラム（例：area_id）。指定すると、そのカラムが同じものの中だけで重複を調べる
+     */
+    public static function make(string $name = 'slug', ?string $scope = null): TextInput
     {
         return TextInput::make($name)
             ->label('スラッグ（URL）')
@@ -22,6 +27,11 @@ final class SlugInput
             ->required()
             ->maxLength(255)
             ->regex(self::PATTERN)
-            ->unique(ignoreRecord: true);
+            ->unique(
+                ignoreRecord: true,
+                modifyRuleUsing: $scope === null
+                    ? null
+                    : fn (Unique $rule, Get $get): Unique => $rule->where($scope, $get($scope)),
+            );
     }
 }

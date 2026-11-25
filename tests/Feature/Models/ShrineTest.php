@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Area;
+use App\Models\Prefecture;
 use App\Models\Shop;
 use App\Models\Shrine;
 use App\Models\ShrineSake;
@@ -158,3 +159,22 @@ it('公開中の神社だけに絞れる', function () {
 
     expect(Shrine::published()->pluck('slug')->all())->toBe(['open']);
 });
+
+it('公開したときの URL のパスは /{都道府県}/{市区町村}/{神社}', function () {
+    $tokyo = Prefecture::factory()->create(['slug' => 'tokyo']);
+    $minato = Area::factory()->create(['slug' => 'minato', 'prefecture_id' => $tokyo->id]);
+    $shrine = Shrine::factory()->create(['slug' => 'atago-jinja', 'area_id' => $minato->id]);
+
+    expect($shrine->publicPath())->toBe('/tokyo/minato/atago-jinja');
+});
+
+it('同じエリアの中では slug は重複できず、エリアが違えば同じ slug を使える', function () {
+    $kawagoe = Area::factory()->create();
+    $omiya = Area::factory()->create();
+    Shrine::factory()->create(['slug' => 'hikawa-jinja', 'area_id' => $kawagoe->id]);
+    Shrine::factory()->create(['slug' => 'hikawa-jinja', 'area_id' => $omiya->id]);
+
+    expect(Shrine::where('slug', 'hikawa-jinja')->count())->toBe(2);
+
+    Shrine::factory()->create(['slug' => 'hikawa-jinja', 'area_id' => $kawagoe->id]);
+})->throws(UniqueConstraintViolationException::class);

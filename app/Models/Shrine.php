@@ -45,6 +45,15 @@ class Shrine extends Model
     }
 
     /**
+     * 本体で公開したときの URL のパス（例：/tokyo/minato/atago-jinja）。
+     * 一覧で使うときは area.prefecture をまとめて読み込んでおく。
+     */
+    public function publicPath(): string
+    {
+        return '/'.$this->area->prefecture->slug.'/'.$this->area->slug.'/'.$this->slug;
+    }
+
+    /**
      * @return BelongsTo<Area, $this>
      */
     public function area(): BelongsTo

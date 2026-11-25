@@ -13,13 +13,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * エリア（港区、武蔵野市 など）。
+ * エリア（港区、武蔵野市、鎌倉市 など。市区町村の単位）。URL の2段目（/tokyo/minato/…）になる。
  */
-#[Fillable(['slug', 'label', 'area_group_id', 'sort_order'])]
+#[Fillable(['prefecture_id', 'slug', 'label', 'area_group_id', 'sort_order'])]
 class Area extends Model
 {
     /** @use HasFactory<AreaFactory> */
     use HasFactory, HasSortOrder;
+
+    /**
+     * @return BelongsTo<Prefecture, $this>
+     */
+    public function prefecture(): BelongsTo
+    {
+        return $this->belongsTo(Prefecture::class);
+    }
 
     /**
      * @return BelongsTo<AreaGroup, $this>
