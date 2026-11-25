@@ -34,7 +34,7 @@ class StationResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroups::SETTINGS;
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 5;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMapPin;
 

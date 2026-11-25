@@ -13,6 +13,7 @@ use App\Filament\Resources\Worries\Pages\EditWorry;
 use App\Filament\Resources\Worries\Pages\ListWorries;
 use App\Models\Area;
 use App\Models\AreaGroup;
+use App\Models\Prefecture;
 use App\Models\Shrine;
 use App\Models\Station;
 use App\Models\User;
@@ -131,15 +132,35 @@ describe('エリアグループ・エリア', function () {
             ->assertNotified('ほかのデータで使われているため、削除できません');
     });
 
-    it('エリアをエリアグループ付きで作れる', function () {
+    it('エリアを都道府県・エリアグループ付きで作れる', function () {
         $group = AreaGroup::factory()->create();
+        $tokyo = Prefecture::factory()->create();
 
         Livewire::test(CreateArea::class)
-            ->fillForm(['label' => '港区', 'slug' => 'minato', 'area_group_id' => $group->id, 'sort_order' => 3])
+            ->fillForm(['prefecture_id' => $tokyo->id, 'label' => '港区', 'slug' => 'minato', 'area_group_id' => $group->id, 'sort_order' => 3])
             ->call('create')
             ->assertHasNoFormErrors();
 
-        expect(Area::firstWhere('slug', 'minato')->group->is($group))->toBeTrue();
+        $area = Area::firstWhere('slug', 'minato');
+        expect($area->group->is($group))->toBeTrue()
+            ->and($area->prefecture->is($tokyo))->toBeTrue();
+    });
+
+    it('エリアのスラッグは、同じ都道府県の中でだけ重複を調べる', function () {
+        $tokyo = Prefecture::factory()->create();
+        $kanagawa = Prefecture::factory()->create();
+        Area::factory()->create(['slug' => 'midori', 'prefecture_id' => $tokyo->id]);
+        $group = AreaGroup::factory()->create();
+
+        Livewire::test(CreateArea::class)
+            ->fillForm(['prefecture_id' => $tokyo->id, 'label' => '緑区', 'slug' => 'midori', 'area_group_id' => $group->id])
+            ->call('create')
+            ->assertHasFormErrors(['slug' => 'unique']);
+
+        Livewire::test(CreateArea::class)
+            ->fillForm(['prefecture_id' => $kanagawa->id, 'label' => '緑区', 'slug' => 'midori', 'area_group_id' => $group->id])
+            ->call('create')
+            ->assertHasNoFormErrors();
     });
 
     it('エリアをエリアグループで絞り込める', function () {

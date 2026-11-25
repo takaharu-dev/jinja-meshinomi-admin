@@ -9,6 +9,7 @@ use App\Filament\Resources\Shrines\RelationManagers\ShopsRelationManager;
 use App\Filament\Resources\Shrines\RelationManagers\StationsRelationManager;
 use App\Filament\Resources\Shrines\RelationManagers\WorriesRelationManager;
 use App\Models\Area;
+use App\Models\Prefecture;
 use App\Models\Shop;
 use App\Models\Shrine;
 use App\Models\Station;
@@ -128,19 +129,46 @@ describe('作成・編集', function () {
     });
 
     it('入力内容を検証する', function (array $input, array $errors) {
-        Shrine::factory()->create(['slug' => 'hie']);
+        $chiyoda = Area::factory()->create(['slug' => 'chiyoda']);
+        Shrine::factory()->create(['slug' => 'hie', 'area_id' => $chiyoda->id]);
+        // データセットではエリアをスラッグで書く（作る前は id が分からないため）
+        if (($input['area_id'] ?? null) === 'chiyoda') {
+            $input['area_id'] = $chiyoda->id;
+        }
 
         Livewire::test(CreateShrine::class)
             ->fillForm(validShrineInput($input))
             ->call('create')
             ->assertHasFormErrors($errors);
     })->with([
-        'スラッグが重複' => [['slug' => 'hie'], ['slug' => 'unique']],
+        '同じエリアでスラッグが重複' => [['slug' => 'hie', 'area_id' => 'chiyoda'], ['slug' => 'unique']],
         'スラッグに大文字' => [['slug' => 'Atago'], ['slug' => 'regex']],
         '名前が空' => [['name' => ''], ['name' => 'required']],
         'エリアが空' => [['area_id' => null], ['area_id' => 'required']],
         '人気度がマイナス' => [['popularity' => -1], ['popularity' => 'min']],
     ]);
+
+    it('エリアが違えば同じスラッグで作れる', function () {
+        Shrine::factory()->create(['slug' => 'hikawa-jinja']);
+
+        Livewire::test(CreateShrine::class)
+            ->fillForm(validShrineInput(['slug' => 'hikawa-jinja']))
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        expect(Shrine::where('slug', 'hikawa-jinja')->count())->toBe(2);
+    });
+
+    it('編集画面に公開したときの URL が出る', function () {
+        $tokyo = Prefecture::factory()->create(['slug' => 'tokyo']);
+        $shrine = Shrine::factory()->create([
+            'slug' => 'atago-jinja',
+            'area_id' => Area::factory()->create(['slug' => 'minato', 'prefecture_id' => $tokyo->id])->id,
+        ]);
+
+        Livewire::test(EditShrine::class, ['record' => $shrine->getRouteKey()])
+            ->assertSee('/tokyo/minato/atago-jinja');
+    });
 
     it('編集画面を開いて保存できる', function () {
         $shrine = Shrine::factory()->create();

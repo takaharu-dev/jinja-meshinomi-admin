@@ -34,7 +34,7 @@ class AreaGroupResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroups::SETTINGS;
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleGroup;
 
