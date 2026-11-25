@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Worries\Pages;
 use App\Filament\Resources\Worries\WorryResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Enums\Size;
 
 class ListWorries extends ListRecords
 {
@@ -15,7 +16,8 @@ class ListWorries extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            // 一覧でいちばん大事な操作なので、大きく出す
+            CreateAction::make()->size(Size::Large),
         ];
     }
 }

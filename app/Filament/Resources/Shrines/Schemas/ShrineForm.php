@@ -18,6 +18,9 @@ class ShrineForm
         return $schema
             ->components([
                 Section::make('基本情報')
+                    ->description(fn (string $operation): ?string => $operation === 'create'
+                        ? '保存すると編集画面に移ります。悩み・最寄り駅・参拝後のお店・写真は、そこで画面の下のタブから追加します。'
+                        : null)
                     ->columns(2)
                     ->schema([
                         TextInput::make('name')

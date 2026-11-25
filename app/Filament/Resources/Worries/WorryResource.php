@@ -9,6 +9,7 @@ use App\Filament\Resources\Worries\Pages\EditWorry;
 use App\Filament\Resources\Worries\Pages\ListWorries;
 use App\Filament\Resources\Worries\Schemas\WorryForm;
 use App\Filament\Resources\Worries\Tables\WorriesTable;
+use App\Filament\Support\NavigationGroups;
 use App\Models\Worry;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -23,9 +24,15 @@ class WorryResource extends Resource
 
     protected static ?string $modelLabel = '悩み';
 
+    /** メニュー・一覧の見出し・パンくずに出る。「一覧」と付けて、開くと一覧が見えることを伝える */
+    protected static ?string $pluralModelLabel = '悩みの一覧';
+
+    /** 「一覧を見る」グループの中なので、メニューには名前だけを出す */
+    protected static ?string $navigationLabel = '悩み';
+
     protected static ?string $recordTitleAttribute = 'label';
 
-    protected static string|UnitEnum|null $navigationGroup = 'マスタ';
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroups::SETTINGS;
 
     protected static ?int $navigationSort = 1;
 

@@ -13,6 +13,7 @@ use App\Filament\Resources\Shrines\RelationManagers\StationsRelationManager;
 use App\Filament\Resources\Shrines\RelationManagers\WorriesRelationManager;
 use App\Filament\Resources\Shrines\Schemas\ShrineForm;
 use App\Filament\Resources\Shrines\Tables\ShrinesTable;
+use App\Filament\Support\NavigationGroups;
 use App\Models\Shrine;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -27,9 +28,15 @@ class ShrineResource extends Resource
 
     protected static ?string $modelLabel = '神社';
 
+    /** メニュー・一覧の見出し・パンくずに出る。「一覧」と付けて、開くと一覧が見えることを伝える */
+    protected static ?string $pluralModelLabel = '神社の一覧';
+
+    /** 「一覧を見る」グループの中なので、メニューには名前だけを出す */
+    protected static ?string $navigationLabel = '神社';
+
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static string|UnitEnum|null $navigationGroup = 'コンテンツ';
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroups::LISTS;
 
     protected static ?int $navigationSort = 1;
 
@@ -43,6 +50,12 @@ class ShrineResource extends Resource
     public static function getGloballySearchableAttributes(): array
     {
         return ['name', 'kana', 'slug'];
+    }
+
+    /** メニューに件数を出す */
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) static::getModel()::query()->count();
     }
 
     public static function form(Schema $schema): Schema
