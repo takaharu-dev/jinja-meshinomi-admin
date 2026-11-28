@@ -2,10 +2,10 @@
 
 [![CI](https://github.com/takaharu-dev/jinja-meshinomi-admin/actions/workflows/ci.yml/badge.svg)](https://github.com/takaharu-dev/jinja-meshinomi-admin/actions/workflows/ci.yml)
 
-神社と、参拝後に寄りたいごはん・地酒のお店を紹介するサイト「神社めし呑み」の管理画面です。神社・お店・特集・参拝記録などを登録し、MySQL に保存します。
+神社と、参拝後に寄りたいごはん・地酒のお店を紹介するサイト「神社めし呑み」の管理画面です。神社・お店・特集・参拝記録などを登録し、MySQL 互換の DB（本番は TiDB Cloud）に保存します。
 
 - 本体サイト：[takaharu-dev/jinja-meshinomi](https://github.com/takaharu-dev/jinja-meshinomi)（React + TypeScript / Go）
-- この管理画面：Laravel 13 + Filament 5 / MySQL 8.4
+- この管理画面：Laravel 13 + Filament 5 / TiDB Cloud Starter（本番）・MySQL 8.4（開発）
 
 本体は今、データを Go のコード（`backend/data.go` など）に直接書いています。この管理画面で DB にデータを登録し、あとで本体の Go API が同じ DB を直接読む形に切り替える予定です。
 
@@ -28,7 +28,7 @@ flowchart LR
         laravel["Laravel + Filament<br/>管理画面"]
     end
 
-    db[("MySQL")]
+    db[("DB<br/>本番：TiDB Cloud<br/>開発：MySQL（Sail）")]
     storage[("写真<br/>Cloudflare R2")]
 
     visitor --> react
@@ -76,6 +76,14 @@ flowchart LR
 - ログイン画面そのものを外から見えなくすることで、パスワードの総当たりや、Laravel・Filament の脆弱性を突かれる危険を減らす
 - 設定し忘れたときに開いてしまわないよう、`ADMIN_IP_RESTRICTION_ENABLED` が未設定なら有効、`ADMIN_ALLOWED_IPS` が空なら全部拒否にしている
 - ユーザー登録画面・パスワード再設定画面は作らない。管理者は `artisan admin:create` で作る
+
+### 本番の運用：管理画面はサーバーに置かない
+
+- 管理画面を使うのは運営者だけなので、サーバーにはデプロイせず、運営者の PC の Sail で動かす。サーバー代・デプロイ・保守が要らず、管理画面そのものが外から見えない
+- 本番のデータは **TiDB Cloud Starter**（MySQL 互換、無料枠あり、東京リージョン）に置く。PC の管理画面から TLS で直接つないで読み書きする
+- 開発・お試しは **Sail の MySQL コンテナ**（`.env.example` の既定値）。本番のデータを壊さずに試せる。TiDB を開発用にもう1つ持つことも考えたが、個人サイトの規模なら1つで足りると判断した
+- 写真は Cloudflare R2 に置くので（下の「その他」）、管理画面がどこで動いていても公開サイトから見える
+- その代わり、編集できるのは管理画面を動かしている PC からだけ。外出先から使いたくなったらサーバーに置くことを考える
 
 ### DB を共有する構成
 
@@ -241,6 +249,43 @@ http://localhost:8000/admin を開き、作った管理者でログインしま�
 ./vendor/bin/sail stop   # 止める
 ./vendor/bin/sail up -d  # また起動する（2回目からは数秒）
 ```
+
+### 本番（TiDB Cloud）につなぐ
+
+ふだんの開発は上の手順（Sail の MySQL）で行います。本番のデータを登録するときは、`.env` の DB の設定を TiDB Cloud に向けます。
+
+1. TiDB Cloud のコンソールで `jinja-meshinomi` を開き、右上の **Connect** からホスト・ユーザー名・パスワードを確認する（パスワードは生成した画面でしか見られない）
+2. `.env` の DB の設定を書き換える（`.env` はコミットしない）
+
+   ```dotenv
+   DB_CONNECTION=mysql
+   DB_HOST=gateway01.ap-northeast-1.prod.aws.tidbcloud.com
+   DB_PORT=4000
+   DB_DATABASE=jinja_meshinomi
+   DB_USERNAME=xxxxxxxx.root
+   DB_PASSWORD=（Connect で生成したもの）
+   # TiDB Cloud は TLS 必須。Sail のコンテナ（Ubuntu）の中の CA 証明書を指す
+   MYSQL_ATTR_SSL_CA=/etc/ssl/certs/ca-certificates.crt
+   ```
+
+3. 設定を読み込み直して、つながるか確かめる
+
+   ```sh
+   ./vendor/bin/sail artisan config:clear
+   ./vendor/bin/sail artisan migrate:status
+   ```
+
+4. 初めてつなぐとき（DB が空のとき）は、テーブル・マスタ・管理者を作る
+
+   ```sh
+   ./vendor/bin/sail artisan migrate --force
+   ./vendor/bin/sail artisan db:seed --force
+   ./vendor/bin/sail artisan admin:create
+   ```
+
+- `APP_ENV=production` にすると `migrate` などで確認を求められるので、`--force` を付ける
+- 本番につないでいる間に `migrate:fresh` や `db:wipe` を実行すると、本番のデータが消える。開発に戻すときは `.env` の DB の設定を元に戻し、`config:clear` する
+- TiDB Cloud Starter は MySQL 8 の関数インデックスに対応していない。マイグレーションで部分 unique を作るときは、仮想生成カラムの unique で代わりにする（#29）
 
 ### 環境変数
 
