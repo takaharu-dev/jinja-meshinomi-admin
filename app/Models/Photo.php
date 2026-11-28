@@ -31,7 +31,7 @@ class Photo extends Model
     }
 
     /**
-     * 写真を置くディスク。config/admin.php の photos.disk（今は public、あとで s3）。
+     * 写真を置くディスク。config/admin.php の photos.disk（本番は s3＝Cloudflare R2）。
      */
     public static function disk(): Filesystem
     {

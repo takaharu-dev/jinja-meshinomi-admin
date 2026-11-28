@@ -29,7 +29,7 @@ flowchart LR
     end
 
     db[("MySQL")]
-    storage[("写真<br/>public ディスク → S3 予定")]
+    storage[("写真<br/>Cloudflare R2")]
 
     visitor --> react
     react -- "/api/*" --> go
@@ -37,6 +37,7 @@ flowchart LR
     admin -- "許可 IP ＋ ログイン" --> laravel
     laravel -- "読み書き" --> db
     laravel --> storage
+    visitor -- "img.jinja-meshinomi.com" --> storage
 ```
 
 - 書き込むのは管理画面だけ。Go API は読むだけにして、書き込みの経路を1つにする
@@ -112,7 +113,10 @@ flowchart LR
 
 - **Docker は Laravel Sail**：Laravel 公式の方法で、`compose.yaml` や Dockerfile を自前で管理しなくて済み、見る人も構成を把握しやすい。初回のイメージビルドが重い（10〜20 分）のが欠点
 - **フロントのビルド環境（Vite / Tailwind）は入れていない**：画面は Filament 標準のレイアウトで足り、色・フォント・ロゴはパネルの設定で本体に揃えている
-- **写真の保存先**：今はローカルの public ディスク。あとで S3 に切り替えられるよう、ディスク名は設定値で持つ
+- **写真の保存先は Cloudflare R2**：S3 互換なので Laravel 標準の `s3` ドライバで扱え、無料枠（保存 10GB/月）が大きく、配信の転送量が無料。カスタムドメイン `img.jinja-meshinomi.com` で公開する
+  - DB（`photos.path`）にはバケット内のパス（`photos/xxxx.jpg`）だけを保存し、URL は表示するときに組み立てる。配信元のドメインを変えても DB を書き換えなくて済む
+  - 管理画面からの書き込みは、このバケットの読み書きだけに絞った API トークンで行う
+  - ディスク名は設定値（`ADMIN_PHOTO_DISK`）で持ち、ローカルで試すときは `public` にもできる
 
 ## テーブル
 
@@ -246,7 +250,8 @@ http://localhost:8000/admin を開き、作った管理者でログインしま�
 |---|---|
 | `ADMIN_IP_RESTRICTION_ENABLED` | IP 制限の有効・無効。ローカルは `false`。未設定なら有効 |
 | `ADMIN_ALLOWED_IPS` | 許可する IP をカンマ区切りで指定。CIDR（`198.51.100.0/24`）と IPv6 も可。空なら全部拒否 |
-| `ADMIN_PHOTO_DISK` | 写真のアップロード先のディスク。今は `public`、本番で `s3` に切り替える想定 |
+| `ADMIN_PHOTO_DISK` | 写真のアップロード先のディスク。R2 に置くなら `s3`、ローカルで試すだけなら `public` |
+| `AWS_*` | R2 の接続情報。`AWS_ENDPOINT` は R2 の S3 API の URL、`AWS_URL` は公開用ドメイン（`https://img.jinja-meshinomi.com`） |
 | `ADMIN_PASSWORD` | `admin:create` で使うパスワード（12文字以上）。空なら実行時に入力を求める |
 | `APP_PORT` / `FORWARD_DB_PORT` | Sail がホスト側に公開するポート |
 
